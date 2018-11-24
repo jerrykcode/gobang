@@ -3,14 +3,14 @@
 #define N_SITUATION 10
 typedef enum {
 	NONE,
-	ONE,
 	BLOCKED_ONE,
-	TWO,
+	ONE,
 	BLOCKED_TWO,
-	THREE,
+	TWO,	
 	BLOCKED_THREE,
-	FOUR,
+	THREE,	
 	BLOCKED_FOUR,
+	FOUR,	
 	FIVE,
 } Situation;
 typedef Situation *PSituation;
