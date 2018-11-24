@@ -16,3 +16,8 @@ void Gobang::computer()
 void Gobang::updateTurnAfterComputer()
 {
 }
+
+bool Gobang::isGameOver(int row, int col)
+{
+	return false;
+}

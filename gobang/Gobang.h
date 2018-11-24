@@ -13,7 +13,7 @@ public:
 	int getComputerRow() { return computerRow; }
 	int getComputerCol() { return computerCol; }
 	void updateTurnAfterComputer();
-	
+	bool isGameOver(int row, int col);
 private:
 
 	int computerRow, computerCol;
