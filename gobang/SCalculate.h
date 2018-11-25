@@ -2,6 +2,9 @@
 #include "Board.h"
 #include "Situation.h"
 
+#define MIN_SCORE -2000000000
+#define MAX_SCORE 2000000000
+
 class SCalculate {
 public:
 	SCalculate();
@@ -9,6 +12,7 @@ public:
 
 	int calculatePointScore(Board board, int row, int col, ChessType chessType);
 	int calculateBoardScore(Board board, ChessType chessType);
+	bool isGameOver(Board board, int row, int col, ChessType chessType);
 private:
 	void initScore();
 	Situation calculateHorizontalScore(Board board, int row, int col, ChessType chessType);

@@ -42,6 +42,15 @@ int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
 	return result;
 }
 
+bool SCalculate::isGameOver(Board board, int row, int col, ChessType chessType) {
+	if (board[row][col] != chessType) return false;
+	if (calculateHorizontalScore(board, row, col, chessType) == FIVE) return true;
+	if (calculateVerticalScore(board, row, col, chessType) == FIVE) return true;
+	if (calculateDiagonalScore(board, row, col, chessType) == FIVE) return true;
+	if (calculateDiagonalScore2(board, row, col, chessType) == FIVE) return true;
+	return false;
+}
+
 Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, ChessType chessType) {	
 	if (board[row][col] != chessType) return NONE;
 	int leftEndCol = col, rightEndCol = col;
