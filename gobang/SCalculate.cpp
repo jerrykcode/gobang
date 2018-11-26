@@ -91,8 +91,8 @@ Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, Ch
 Situation SCalculate::calculateVerticalScore(Board board, int row, int col, ChessType chessType) {
 	if (board[row][col] != chessType) return NONE;
 	int topEndRow = row, bottomEndRow = row;
-	while (topEndRow - 1 >= 0 && board[topEndRow][col] == chessType) topEndRow--;
-	while (bottomEndRow + 1 < NROWS && board[bottomEndRow][col] == chessType) bottomEndRow++;
+	while (topEndRow - 1 >= 0 && board[topEndRow - 1][col] == chessType) topEndRow--;
+	while (bottomEndRow + 1 < NROWS && board[bottomEndRow + 1][col] == chessType) bottomEndRow++;
 	int len = bottomEndRow - topEndRow + 1;
 	int slen = len;
 	bool canUp = topEndRow - 2 >= 0 && board[topEndRow - 1][col] == EMPTY && board[topEndRow - 2][col] == chessType;
