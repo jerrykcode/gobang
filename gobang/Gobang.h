@@ -2,6 +2,9 @@
 #include "Board.h"
 #include "ZMap.h"
 #include "SCalculate.h"
+#include <vector>
+#include <queue>
+using namespace std;
 
 class Gobang {
 
@@ -40,6 +43,8 @@ private:
 	void addWhite(int row, int col);
 
 	BestResult getBestResult(int preBestScore, ChessType chessType, int level);
+	void bfsGetCoordinates(vector<PCoordinate>& pCoordinates);
+	PCoordinate bfsGetAround(queue<PCoordinate>& q, vector<PCoordinate>& pCoordinates, bool **collected, int row, int col);
 
 	int getSearchLevel();
 

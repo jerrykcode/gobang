@@ -1,7 +1,5 @@
 #include "Gobang.h"
 #include <algorithm>
-#include <vector>
-using namespace std;
 
 #define NO_ALPHA_BETA (MIN_SCORE - 1)
 
@@ -52,6 +50,66 @@ void Gobang::computer() {
 	nChess++;
 }
 
+void Gobang::bfsGetCoordinates(vector<PCoordinate>& pCoordinates) {
+	bool **collected = new bool*[NROWS];
+	for (int row = 0; row < NROWS; row++) {
+		collected[row] = new bool[NCOLS];
+		for (int col = 0; col < NCOLS; col++)
+			collected[row][col] = false;
+	}
+	for (int row = 0; row < NROWS; row++)
+		for (int col = 0; col < NCOLS; col++) {
+			if (board[row][col] != EMPTY && !collected[row][col]) {
+				queue<PCoordinate> q;
+				PCoordinate root = new Coordinate(row, col);
+				q.push(root);
+				collected[row][col] = true;
+				PCoordinate last = root, tail = root;
+				int level = 0;
+				while (!q.empty()) {
+					PCoordinate back = q.back();
+					q.pop();
+					int bRow = back->row, bCol = back->col;					
+					PCoordinate pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow - 1, bCol - 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow - 1, bCol);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow - 1, bCol + 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow, bCol - 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow, bCol + 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow + 1, bCol - 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow + 1, bCol);
+					if (pCoordinate != NULL) last = pCoordinate;
+					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow + 1, bCol + 1);
+					if (pCoordinate != NULL) last = pCoordinate;
+					if (back == tail) {
+						tail = last;
+						level++;
+					}
+					if (level == 3) break;
+				}
+			}
+		}
+	for (int row = 0; row < NROWS; row++)
+		free(collected[row]);
+	free(collected);
+}
+
+PCoordinate Gobang::bfsGetAround(queue<PCoordinate>& q, vector<PCoordinate>& pCoordinates, bool **collected, int row, int col) {
+	if (row >= 0 && row < NROWS && col >= 0 && col < NCOLS && board[row][col] == EMPTY && !collected[row][col]) {
+		PCoordinate pCoordinate = new Coordinate(row, col);
+		q.push(pCoordinate);
+		pCoordinates.push_back(pCoordinate);
+		collected[row][col] = true;
+		return pCoordinate;
+	}
+	return NULL;
+}
+
 BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int level) {
 	if (zmap.hasKey(board)) {
 		BestResult bestRes = zmap.getValue(board);
@@ -60,16 +118,16 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 		}
 	}
 	SearchType searchType = chessType == computerChessType ? SEARCH_MAX : SEARCH_MIN;
+	vector<PCoordinate> pCoordinates;
+	bfsGetCoordinates(pCoordinates);
 	vector<Position> positions;
-	for (int row = 0; row < NROWS; row++)
-		for (int col = 0; col < NCOLS; col++) {
-			if (board[row][col] == EMPTY) {
-				board[row][col] = chessType;
-				int score = scalculate.calculatePointScore(board, row, col, chessType);
-				board[row][col] = EMPTY;
-				positions.push_back(Position(Coordinate(row, col), score));
-			}
-		}
+	for (PCoordinate pCoordinate : pCoordinates) {
+		board[pCoordinate->row][pCoordinate->col] = chessType;
+		int score = scalculate.calculateBoardScore(board, chessType);
+		positions.push_back(Position(*pCoordinate, score));
+		board[pCoordinate->row][pCoordinate->col] = EMPTY;
+	}
+	vector<PCoordinate>().swap(pCoordinates);
 	sort(positions.begin(), positions.end(), compare);
 	int bestScore = searchType == SEARCH_MAX ? MIN_SCORE : MAX_SCORE;
 	int bestRow = 0, bestCol = 0;
@@ -92,7 +150,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 				bestRow = row;
 				bestCol = col;
 			}
-			if (preBestScore != NO_ALPHA_BETA && currentScore > preBestScore) {
+			if (preBestScore != NO_ALPHA_BETA && currentScore >= preBestScore) {
 				return BestResult(Coordinate(row, col), level, currentScore);
 			}
 			break;
@@ -101,8 +159,9 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 			if (currentScore < bestScore) {
 				bestScore = currentScore;
 				bestRow = row;
+				bestCol = col;
 			}
-			if (preBestScore != NO_ALPHA_BETA && currentScore < preBestScore) {
+			if (preBestScore != NO_ALPHA_BETA && currentScore <= preBestScore) {
 				return BestResult(Coordinate(row, col), level, currentScore);
 			}
 		}
@@ -110,6 +169,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 			break;
 		}
 	} //for
+	vector<Position>().swap(positions);
 	BestResult bestResult(Coordinate(bestRow, bestCol), level, bestScore);
 	zmap.insert(board, bestResult);
 	return bestResult;
@@ -125,12 +185,10 @@ bool Gobang::isGameOver(int row, int col) {
 }
 
 int Gobang::getSearchLevel() {
-	if (nChess < 5)
-		return 4;
-	else if (nChess < 20)
-		return 5;
+	if (nChess < 20)
+		return 3;
 	else if (nChess < 70)
-		return 8;
-	else return 10;
+		return 5;
+	else return 7;
 	return 0;
 }
