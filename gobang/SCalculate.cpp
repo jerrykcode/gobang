@@ -16,29 +16,62 @@ void SCalculate::initScore() {
 	score[TWO] = 100;
 	score[BLOCKED_THREE] = 100;
 	score[THREE] = 1000;
-	score[BLOCKED_FOUR] = 10000;
-	score[FOUR] = 100000;
-	score[FIVE] = 10000000;
+	score[BLOCKED_FOUR] = 2000;
+	score[FOUR] = 10000;
+	score[FIVE] = 100000000;
 }
 
-int SCalculate::calculatePointScore(Board board, int row, int col, ChessType chessType) {
+int SCalculate::calculatePointScore(Board board, int row, int col, ChessType chessType, PSituation pBestSituation) {
 	if (board[row][col] != chessType) return 0;
 	int result = 0;
-	result += score[calculateHorizontalScore(board, row, col, chessType)];
-	result += score[calculateVerticalScore(board, row, col, chessType)];
-	result += score[calculateDiagonalScore(board, row, col, chessType)];
-	result += score[calculateDiagonalScore2(board, row, col, chessType)];
+	Situation bestSituation = NONE, currentSituation;
+
+	currentSituation = calculateHorizontalScore(board, row, col, chessType);
+	if (currentSituation > bestSituation) bestSituation = currentSituation;
+	result += score[currentSituation];
+
+	currentSituation = calculateVerticalScore(board, row, col, chessType);
+	if (currentSituation > bestSituation) bestSituation = currentSituation;
+	result += score[currentSituation];
+
+	currentSituation = calculateDiagonalScore(board, row, col, chessType);
+	if (currentSituation > bestSituation) bestSituation = currentSituation;
+	result += score[currentSituation];
+
+	currentSituation = calculateDiagonalScore2(board, row, col, chessType);
+	if (currentSituation > bestSituation) bestSituation = currentSituation;
+	result += score[currentSituation];
+
+	*pBestSituation = bestSituation;
+
 	return result;
 }
 
 int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
-	int result = 0;
+	int result = 0;	
+	Situation bestSituation = NONE, tmpSituation;
 	for (int row = 0; row < NROWS; row++)
 		for (int col = 0; col < NCOLS; col++) {
 			if (board[row][col] == EMPTY) continue;
-			else if (board[row][col] == chessType) result += calculatePointScore(board, row, col, chessType);
-			else result -= calculatePointScore(board, row, col, REVERSE_CHESS_TYPE(chessType));
+			else if (board[row][col] == chessType) result += calculatePointScore(board, row, col, chessType, &tmpSituation);
+			else {
+				int s = calculatePointScore(board, row, col, REVERSE_CHESS_TYPE(chessType), &tmpSituation);
+				result -= s;
+				if (tmpSituation > bestSituation) bestSituation = tmpSituation;
+			}
 		}
+	switch (bestSituation) {
+	case NONE: break;
+	case BLOCKED_ONE: result += score[BLOCKED_ONE]; result -= score[BLOCKED_TWO]; break;
+	case ONE: result += score[ONE]; result -= score[TWO]; break;
+	case BLOCKED_TWO: result += score[BLOCKED_TWO]; result -= score[BLOCKED_THREE]; break;
+	case TWO: result += score[TWO]; result -= score[THREE]; break;
+	case BLOCKED_THREE: result += score[BLOCKED_THREE]; result -= score[BLOCKED_FOUR]; break;
+	case THREE: result += score[THREE]; result -= score[FOUR]; break;
+	case BLOCKED_FOUR: case FOUR: result -= score[bestSituation]; result += score[FIVE]; break;
+	case FIVE: break;
+	default: break;
+	}
 	return result;
 }
 

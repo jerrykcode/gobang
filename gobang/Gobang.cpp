@@ -92,7 +92,7 @@ void Gobang::bfsGetCoordinates(vector<PCoordinate>& pCoordinates) {
 						tail = last;
 						level++;
 					}
-					if (level == 3) break;
+					if (level == 2) break;
 				}
 			}
 		}
@@ -131,14 +131,18 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 	}
 	vector<PCoordinate>().swap(pCoordinates);
 	sort(positions.begin(), positions.end(), compare);
-	int bestScore = searchType == SEARCH_MAX ? MIN_SCORE : MAX_SCORE;
+	int bestScore = searchType == SEARCH_MAX ? MIN_SCORE - 1 : MAX_SCORE + 1;
 	int bestRow = 0, bestCol = 0;
 	for (auto it = positions.begin(); it != positions.end(); it++) {
 		int row = it->c.row, col = it->c.col;		
 		int currentScore;
 		board[row][col] = chessType;
-		if (level == 1) {
+		if (scalculate.isGameOver(board, row, col, chessType)) {
+			currentScore = chessType == computerChessType ? MAX_SCORE : MIN_SCORE;
+		}
+		else if (level == 1) {
 			currentScore = scalculate.calculateBoardScore(board, chessType);
+			if (chessType != computerChessType) currentScore *= -1;
 		}
 		else {
 			BestResult result = getBestResult(bestScore, REVERSE_CHESS_TYPE(chessType), level - 1);
@@ -187,11 +191,5 @@ bool Gobang::isGameOver(int row, int col) {
 }
 
 int Gobang::getSearchLevel() {
-	/*if (nChess < 20)
-		return 3;
-	else if (nChess < 70)
-		return 5;
-	else return 7;
-	return 0;*/
-	return 3;
+	return 5;
 }

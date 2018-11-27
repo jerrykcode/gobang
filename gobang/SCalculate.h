@@ -10,7 +10,7 @@ public:
 	SCalculate();
 	~SCalculate();
 
-	int calculatePointScore(Board board, int row, int col, ChessType chessType);
+	int calculatePointScore(Board board, int row, int col, ChessType chessType, PSituation pBestSituation);
 	int calculateBoardScore(Board board, ChessType chessType);
 	bool isGameOver(Board board, int row, int col, ChessType chessType);
 private:
