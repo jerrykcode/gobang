@@ -121,6 +121,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 	SearchType searchType = chessType == computerChessType ? SEARCH_MAX : SEARCH_MIN;
 	int bestScore = searchType == SEARCH_MAX ? MIN_SCORE - 1 : MAX_SCORE + 1;
 	int bestRow = 0, bestCol = 0;
+	bool hasAlphaBeta = false;
 	vector<PCoordinate> pCoordinates;
 	bfsGetCoordinates(pCoordinates);
 	vector<Position> positions;
@@ -146,7 +147,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 	if (level == 1) {
 		goto END;
 	}
-	sort(positions.begin(), positions.end(), compare);	
+	sort(positions.begin(), positions.end(), compare);		
 	for (auto it = positions.begin(); it != positions.end(); it++) {
 		int row = it->c.row, col = it->c.col;
 		board[row][col] = chessType;
@@ -166,6 +167,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 				bestCol = col;
 			}
 			if (preBestScore != NO_ALPHA_BETA && bestScore >= preBestScore) {
+				hasAlphaBeta = true;
 				goto END;
 			}
 			break;
@@ -177,6 +179,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 				bestCol = col;
 			}
 			if (preBestScore != NO_ALPHA_BETA && bestScore <= preBestScore) {
+				hasAlphaBeta = true;
 				goto END;
 			}
 			break;
@@ -195,7 +198,7 @@ END:
 	vector<PCoordinate>().swap(pCoordinates);
 	vector<Position>().swap(positions);
 	BestResult bestResult(Coordinate(bestRow, bestCol), level, bestScore);
-	if (preBestScore != NO_ALPHA_BETA) {
+	if (preBestScore != NO_ALPHA_BETA && !hasAlphaBeta) {
 		zmap.insert(board, bestResult);
 	}
 	return bestResult;
