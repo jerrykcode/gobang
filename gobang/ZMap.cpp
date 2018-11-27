@@ -31,17 +31,26 @@ void ZMap::free2DArray(int ** arr) {
 
 bool ZMap::hasKey(Board board) {
 	int key = getZobristCode(board);
-	return map_.find(key) != map_.end();
+	int nChess = nChessOnBoard(board);
+	return map_[nChess].find(key) != map_[nChess].end();
 }
 
 BestResult ZMap::getValue(Board board) {
 	int key = getZobristCode(board);
-	return map_[key];
+	int nChess = nChessOnBoard(board);
+	return map_[nChess][key];
 }
 
 void ZMap::insert(Board board, BestResult bestRes) {
 	int key = getZobristCode(board);
-	map_[key] = bestRes;
+	int nChess = nChessOnBoard(board);
+	map_[nChess][key] = bestRes;
+}
+
+void ZMap::deleteMap(int nChess) {
+	for (auto it = map_[nChess].begin(); it != map_[nChess].end(); it++)
+		delete &(it->second);
+	map<int, BestResult>().swap(map_[nChess]);
 }
 
 int ZMap::getZobristCode(Board board) {
@@ -57,4 +66,15 @@ int ZMap::getZobristCode(Board board) {
 			result ^= zcode;
 		}
 	return result;
+}
+
+int ZMap::nChessOnBoard(Board board)
+{
+	int nChess = 0;
+	for (int row = 0; row < NROWS; row++)
+		for (int col = 0; col < NCOLS; col++) {
+			if (board[row][col] != 0)
+				nChess++;
+		}
+	return nChess;
 }

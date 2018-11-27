@@ -29,6 +29,7 @@ void Gobang::human(int row, int col) {
 	else
 		addBlack(row, col);
 	nChess++;
+	zmap.deleteMap(nChess - 1);
 	isComputerTurn = true;
 }
 
@@ -48,6 +49,7 @@ void Gobang::computer() {
 		addBlack(computerRow, computerCol);
 	else addWhite(computerRow, computerCol);
 	nChess++;
+	zmap.deleteMap(nChess - 1);
 }
 
 void Gobang::bfsGetCoordinates(vector<PCoordinate>& pCoordinates) {
@@ -185,10 +187,11 @@ bool Gobang::isGameOver(int row, int col) {
 }
 
 int Gobang::getSearchLevel() {
-	if (nChess < 20)
+	/*if (nChess < 20)
 		return 3;
 	else if (nChess < 70)
 		return 5;
 	else return 7;
-	return 0;
+	return 0;*/
+	return 3;
 }

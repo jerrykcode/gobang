@@ -22,9 +22,12 @@ public:
 	BestResult getValue(Board board);
 	void insert(Board board, BestResult bestRes);
 
+	void deleteMap(int nChess);
+
 private:
 
 	int getZobristCode(Board board);
+	int nChessOnBoard(Board board);
 
 	int** initRandom2DArray();
 	void free2DArray(int **arr);
@@ -33,6 +36,6 @@ private:
 	int **whiteBoard;
 	int **emptyBoard;
 	
-	map<int, BestResult> map_;
+	map<int, BestResult> map_[NROWS*NCOLS + 1];
 	default_random_engine rand;
 };
