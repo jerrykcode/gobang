@@ -68,7 +68,7 @@ int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
 	case TWO: result += score[TWO]; result -= score[THREE]; break;
 	case BLOCKED_THREE: result += score[BLOCKED_THREE]; result -= score[BLOCKED_FOUR]; break;
 	case THREE: result += score[THREE]; result -= score[FOUR]; break;
-	case BLOCKED_FOUR: case FOUR: result -= score[bestSituation]; result += score[FIVE]; break;
+	case BLOCKED_FOUR: case FOUR: result += score[bestSituation]; result -= score[FIVE]; break;
 	case FIVE: break;
 	default: break;
 	}

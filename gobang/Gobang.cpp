@@ -127,7 +127,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 	for (PCoordinate pCoordinate : pCoordinates) {
 		int row = pCoordinate->row, col = pCoordinate->col;
 		board[row][col] = chessType;
-		int currentScore = scalculate.calculateBoardScore(board, chessType);		
+		int currentScore = scalculate.calculateBoardScore(board, computerChessType);		
 		if (level == 1) {
 			if (searchType == SEARCH_MAX && currentScore > bestScore) {
 				bestScore = currentScore;
