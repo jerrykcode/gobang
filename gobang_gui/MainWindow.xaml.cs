@@ -11,7 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace gobang_gui
 {
@@ -51,6 +53,8 @@ namespace gobang_gui
         private char humanChessType;
         private bool gameOver;
 
+        public static SynchronizationContext s_SC = SynchronizationContext.Current;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -64,8 +68,7 @@ namespace gobang_gui
                 ColumnDefinition columnDefinition = new ColumnDefinition();
                 columnDefinition.Width = new GridLength(1, GridUnitType.Star);
                 board.ColumnDefinitions.Add(columnDefinition);
-            }
-
+            }        
             for (int i = 0; i < board.RowDefinitions.Count; i++)
                 for (int j = 0; j < board.ColumnDefinitions.Count; j++)
                 {
@@ -92,8 +95,10 @@ namespace gobang_gui
             //MessageBox.Show("row = "+row+" col = "+col);
             if (isValid(row, col))
             {              
-                human(row, col);               
-                ((Button)sender).Content = humanChessType == 'B' ? "X" : "O";              
+                human(row, col);
+
+                ((Button)sender).Content = humanChessType == 'B' ? 'X' : 'O';
+                App.DoEvents();
                 if (isGameOver(row, col))
                 {
                     gameOver = true;
@@ -126,6 +131,11 @@ namespace gobang_gui
         private int charDigitToInt(char a, char b)
         {
             return (int)b - (int)'0' + ((int)a - (int)'0') * 10;
+        }
+
+        private void updateUI()
+        {
+           // button.Content = content;
         }
     }
 }
