@@ -12,16 +12,23 @@ struct BestResult {
 	int score;
 };
 
+//封装std::map数组，用于zobrist缓存
 class ZMap {
 public:
 
 	ZMap();
 	~ZMap();
 
+	/* 返回是否有board缓存 */
 	bool hasKey(Board board);
+
+	/* 返回board对应的BestResult */
 	BestResult getValue(Board board);
+
+	/* 插入键值对<board, bestRes> */
 	void insert(Board board, BestResult bestRes);
 
+	/* 删除nChess颗棋子情况的缓存 */
 	void deleteMap(int nChess);
 
 private:

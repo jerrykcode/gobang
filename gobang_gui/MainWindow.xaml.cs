@@ -59,6 +59,7 @@ namespace gobang_gui
         {
             InitializeComponent();
 
+            //初始化按钮
             for (int i = 0; i < 15; i++)
             {
                 RowDefinition rowDefinition = new RowDefinition();
@@ -73,6 +74,8 @@ namespace gobang_gui
                 for (int j = 0; j < board.ColumnDefinitions.Count; j++)
                 {
                     Button button = new Button();
+                    button.FontStretch = new FontStretch();
+                    button.FontSize = 20;
                     button.Name = toName(i, j);
                     RegisterName(toName(i, j), button);
                     button.Click += new RoutedEventHandler(click);
@@ -81,36 +84,37 @@ namespace gobang_gui
                     board.Children.Add(button);
                 }
 
-            humanChessType = 'B';
-            init(humanChessType);
+            humanChessType = 'B'; //用户执黑先行
+            init(humanChessType); //初始化
             gameOver = false;
         }
 
         private void click(object sender, RoutedEventArgs e)
         {
             if (gameOver) return;
+            //根据按钮Name得到按钮的(row, col)坐标
             var name = ((Button)sender).Name.ToCharArray();           
             int row = charDigitToInt(name[1], name[2]);
-            int col = charDigitToInt(name[3], name[4]);
-            //MessageBox.Show("row = "+row+" col = "+col);
+            int col = charDigitToInt(name[3], name[4]);    
             if (isValid(row, col))
             {              
                 human(row, col);
 
-                ((Button)sender).Content = humanChessType == 'B' ? 'X' : 'O';
-                App.DoEvents();
+                ((Button)sender).Content = humanChessType == 'B' ? "●" : "○";
+                App.DoEvents(); //更新UI
                 if (isGameOver(row, col))
                 {
                     gameOver = true;
                     MessageBox.Show("You Won!");
                     return;
                 }               
-                computer();              
+                computer(); //电脑落子         
                 int computerRow = getComputerRow();
                 int computerCol = getComputerCol();
+                //找到电脑落子所在的按钮
                 if (board.FindName(toName(computerRow, computerCol)) != null)
                 {
-                    ((Button)board.FindName(toName(computerRow, computerCol))).Content = humanChessType == 'B' ? "O" : "X";
+                    ((Button)board.FindName(toName(computerRow, computerCol))).Content = humanChessType == 'B' ? "○" : "●";
                 }
                 if (isGameOver(computerRow, computerCol))
                 {
@@ -131,11 +135,6 @@ namespace gobang_gui
         private int charDigitToInt(char a, char b)
         {
             return (int)b - (int)'0' + ((int)a - (int)'0') * 10;
-        }
-
-        private void updateUI()
-        {
-           // button.Content = content;
-        }
+        }    
     }
 }

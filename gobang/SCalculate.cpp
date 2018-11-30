@@ -9,6 +9,7 @@ SCalculate::~SCalculate() {
 }
 
 void SCalculate::initScore() {
+	//各种情况对应的分数
 	score[NONE] = 0;
 	score[BLOCKED_ONE] = 1;
 	score[ONE] = 10;
@@ -26,18 +27,22 @@ int SCalculate::calculatePointScore(Board board, int row, int col, ChessType che
 	int result = 0;
 	Situation bestSituation = NONE, currentSituation;
 
+	//水平方向
 	currentSituation = calculateHorizontalScore(board, row, col, chessType);
 	if (currentSituation > bestSituation) bestSituation = currentSituation;
 	result += score[currentSituation];
 
+	//竖直方向
 	currentSituation = calculateVerticalScore(board, row, col, chessType);
 	if (currentSituation > bestSituation) bestSituation = currentSituation;
 	result += score[currentSituation];
 
+	//对角线
 	currentSituation = calculateDiagonalScore(board, row, col, chessType);
 	if (currentSituation > bestSituation) bestSituation = currentSituation;
 	result += score[currentSituation];
 
+	//对角线2
 	currentSituation = calculateDiagonalScore2(board, row, col, chessType);
 	if (currentSituation > bestSituation) bestSituation = currentSituation;
 	result += score[currentSituation];
@@ -52,14 +57,19 @@ int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
 	Situation bestSituation = NONE, tmpSituation;
 	for (int row = 0; row < NROWS; row++)
 		for (int col = 0; col < NCOLS; col++) {
+			//(row, col)为空, continue
 			if (board[row][col] == EMPTY) continue;
+			//(row, col)为chessType类型棋子，(row, col)坐标的分数加在result上
 			else if (board[row][col] == chessType) result += calculatePointScore(board, row, col, chessType, &tmpSituation);
 			else {
+				//(row, col)为反方棋子，(row, col)坐标的分数被result减去
 				int s = calculatePointScore(board, row, col, REVERSE_CHESS_TYPE(chessType), &tmpSituation);
 				result -= s;
 				if (tmpSituation > bestSituation) bestSituation = tmpSituation;
 			}
 		}
+	//调用calculateBoardScore时，是在chessType类型落子后，而反方尚未落子的情况下。故对于反方最好的situation，反方可落子
+	//使其变为对他更好的situation。如反方有一个FOUR， 他可以落子使其变为FIVE。
 	switch (bestSituation) {
 	case NONE: break;
 	case BLOCKED_ONE: result += score[BLOCKED_ONE]; result -= score[BLOCKED_TWO]; break;
@@ -77,6 +87,7 @@ int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
 
 bool SCalculate::isGameOver(Board board, int row, int col, ChessType chessType) {
 	if (board[row][col] != chessType) return false;
+	//若四个方向中有一个成FIVE，则游戏结束
 	if (calculateHorizontalScore(board, row, col, chessType) == FIVE) return true;
 	if (calculateVerticalScore(board, row, col, chessType) == FIVE) return true;
 	if (calculateDiagonalScore(board, row, col, chessType) == FIVE) return true;
@@ -87,13 +98,15 @@ bool SCalculate::isGameOver(Board board, int row, int col, ChessType chessType) 
 Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, ChessType chessType) {	
 	if (board[row][col] != chessType) return NONE;
 	int leftEndCol = col, rightEndCol = col;
-	while (leftEndCol - 1 >= 0 && board[row][leftEndCol - 1] == chessType) leftEndCol--;
-	while (rightEndCol + 1 < NCOLS && board[row][rightEndCol + 1] == chessType) rightEndCol++;
-	int len = rightEndCol - leftEndCol + 1;
-	int slen = len;
+	while (leftEndCol - 1 >= 0 && board[row][leftEndCol - 1] == chessType) leftEndCol--; //向左
+	while (rightEndCol + 1 < NCOLS && board[row][rightEndCol + 1] == chessType) rightEndCol++; //向右
+	int len = rightEndCol - leftEndCol + 1; 
+	int slen = len; //连续的chessType类型的棋子长度
+	//若左边为空且左边的左边还是chessType类型的棋子，则可以向左边延续
 	bool canLeft = leftEndCol - 2 >= 0 && board[row][leftEndCol - 1] == EMPTY && board[row][leftEndCol - 2] == chessType;
+	//若右边为空且右边的右边还是chessType类型的棋子，则可以向右边延续
 	bool canRight = rightEndCol + 2 < NCOLS && board[row][rightEndCol + 1] == EMPTY && board[row][rightEndCol + 2] == chessType;
-	int leftGain = 0, rightGain = 0;
+	int leftGain = 0, rightGain = 0; //左边延续数量与右边延续数量
 	if (canLeft) {
 		leftGain = 1;
 		while (leftEndCol - 1 - leftGain >= 0 && board[row][leftEndCol - 1 - leftGain] == chessType)
@@ -107,6 +120,7 @@ Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, Ch
 		rightGain--;
 	}
 	if (leftGain != 0 || rightGain != 0) {
+		//左右只能往一个方向延续
 		if (leftGain > rightGain) {
 			len += leftGain;
 			leftEndCol = leftEndCol - 1 - leftGain;
@@ -116,8 +130,8 @@ Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, Ch
 			rightEndCol = rightEndCol + 1 + rightGain;
 		}
 	}	
-	bool isLeftBlocked = (leftEndCol - 1 < 0 || board[row][leftEndCol - 1] != EMPTY);
-	bool isRightBlocked = (rightEndCol + 1 >= NCOLS || board[row][rightEndCol + 1] != EMPTY);
+	bool isLeftBlocked = (leftEndCol - 1 < 0 || board[row][leftEndCol - 1] != EMPTY); //左边是否阻塞
+	bool isRightBlocked = (rightEndCol + 1 >= NCOLS || board[row][rightEndCol + 1] != EMPTY); //右边是否阻塞
 	return getSituation(len, slen, isLeftBlocked, isRightBlocked);
 }
 
@@ -247,9 +261,9 @@ Situation SCalculate::calculateDiagonalScore2(Board board, int row, int col, Che
 Situation SCalculate::getSituation(int len, int slen, bool isBlocked1, bool isBlocked2)
 {
 	Situation situation;
-	if (slen >= 5) return FIVE;
+	if (slen >= 5) return FIVE; //连续的数量大于等于5
 	if (len >= 5) return FOUR;
-	if (isBlocked1 && isBlocked2) return NONE;
+	if (isBlocked1 && isBlocked2) return NONE; //两边均阻塞
 	switch (len)
 	{
 	case 0: situation = NONE; break;
