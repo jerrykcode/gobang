@@ -5,6 +5,13 @@
 #define MIN_SCORE -2000000000
 #define MAX_SCORE 2000000000
 
+typedef enum {
+	HORIZONTAL = 0,
+	VERTICAL = 1,
+	DIAGONAL = 2,
+	DIAGONAL2 = 3,
+} Direction;
+
 //计算分数类
 class SCalculate {
 public:
@@ -21,6 +28,7 @@ public:
 	bool isGameOver(Board board, int row, int col, ChessType chessType);
 private:
 	void initScore();
+	Situation calculateScore(Board board, int row, int col, ChessType chessType, Direction direction);
 	Situation calculateHorizontalScore(Board board, int row, int col, ChessType chessType);
 	Situation calculateVerticalScore(Board board, int row, int col, ChessType chessType);
 	Situation calculateDiagonalScore(Board board, int row, int col, ChessType chessType);

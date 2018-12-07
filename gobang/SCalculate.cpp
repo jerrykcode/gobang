@@ -27,25 +27,11 @@ int SCalculate::calculatePointScore(Board board, int row, int col, ChessType che
 	int result = 0;
 	Situation bestSituation = NONE, currentSituation;
 
-	//水平方向
-	currentSituation = calculateHorizontalScore(board, row, col, chessType);
-	if (currentSituation > bestSituation) bestSituation = currentSituation;
-	result += score[currentSituation];
-
-	//竖直方向
-	currentSituation = calculateVerticalScore(board, row, col, chessType);
-	if (currentSituation > bestSituation) bestSituation = currentSituation;
-	result += score[currentSituation];
-
-	//对角线
-	currentSituation = calculateDiagonalScore(board, row, col, chessType);
-	if (currentSituation > bestSituation) bestSituation = currentSituation;
-	result += score[currentSituation];
-
-	//对角线2
-	currentSituation = calculateDiagonalScore2(board, row, col, chessType);
-	if (currentSituation > bestSituation) bestSituation = currentSituation;
-	result += score[currentSituation];
+	for (int d = HORIZONTAL; d <= DIAGONAL2; d++) {
+		currentSituation = calculateScore(board, row, col, chessType, (Direction)d);
+		if (currentSituation > bestSituation) bestSituation = currentSituation;
+		result += score[currentSituation];
+	}
 
 	*pBestSituation = bestSituation;
 
@@ -88,11 +74,33 @@ int SCalculate::calculateBoardScore(Board board, ChessType chessType) {
 bool SCalculate::isGameOver(Board board, int row, int col, ChessType chessType) {
 	if (board[row][col] != chessType) return false;
 	//若四个方向中有一个成FIVE，则游戏结束
-	if (calculateHorizontalScore(board, row, col, chessType) == FIVE) return true;
-	if (calculateVerticalScore(board, row, col, chessType) == FIVE) return true;
-	if (calculateDiagonalScore(board, row, col, chessType) == FIVE) return true;
-	if (calculateDiagonalScore2(board, row, col, chessType) == FIVE) return true;
+	for (int d = HORIZONTAL; d <= DIAGONAL2; d++)
+		if (calculateScore(board, row, col, chessType, (Direction)d) == FIVE) return true;
 	return false;
+}
+
+Situation SCalculate::calculateScore(Board board, int row, int col, ChessType chessType, Direction direction)
+{
+	Situation situation;
+	switch (direction) {		
+	case HORIZONTAL: { //水平方向
+		situation = calculateHorizontalScore(board, row, col, chessType);
+		break;
+	}
+	case VERTICAL: { //竖直方向
+		situation = calculateVerticalScore(board, row, col, chessType);
+		break;
+	}
+	case DIAGONAL: { //对角线
+		situation = calculateDiagonalScore(board, row, col, chessType);
+		break;
+	}
+	case DIAGONAL2: { //对角线2
+		situation = calculateDiagonalScore2(board, row, col, chessType);
+	}
+	default: break;
+	}
+	return situation;
 }
 
 Situation SCalculate::calculateHorizontalScore(Board board, int row, int col, ChessType chessType) {	
