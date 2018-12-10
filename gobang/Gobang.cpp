@@ -44,8 +44,8 @@ void Gobang::addWhite(int row, int col) {
 
 void Gobang::computer() {
 	BestResult bestResult = getBestResult(NO_ALPHA_BETA, computerChessType, getSearchLevel());
-	computerRow = bestResult.c.row;
-	computerCol = bestResult.c.col;
+	computerRow = bestResult.c.row();
+	computerCol = bestResult.c.col();
 	if (computerChessType == BLACK)
 		addBlack(computerRow, computerCol);
 	else addWhite(computerRow, computerCol);
@@ -72,9 +72,9 @@ void Gobang::bfsGetCoordinates(vector<PCoordinate>& pCoordinates) {
 				PCoordinate last = root, tail = root;
 				int level = 0;
 				while (!q.empty()) {
-					PCoordinate back = q.back();
+					PCoordinate front = q.front();
 					q.pop();
-					int bRow = back->row, bCol = back->col;		
+					int bRow = front->row(), bCol = front->col();		
 					//周围8个坐标
 					//记录最后进队列的为last
 					PCoordinate pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow - 1, bCol - 1);
@@ -93,7 +93,7 @@ void Gobang::bfsGetCoordinates(vector<PCoordinate>& pCoordinates) {
 					if (pCoordinate != NULL) last = pCoordinate;
 					pCoordinate = bfsGetAround(q, pCoordinates, collected, bRow + 1, bCol + 1);
 					if (pCoordinate != NULL) last = pCoordinate;
-					if (back == tail) { //出队列的是上一层最后一个，进入新一层
+					if (front == tail) { //出队列的是上一层最后一个，进入新一层
 						tail = last;
 						level++;
 					}
@@ -133,7 +133,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 	int bestRow = 0, bestCol = 0;
 	bool hasAlphaBetaPruning = false; //标记是否剪枝
 	for (PCoordinate pCoordinate : pCoordinates) { //遍历坐标
-		int row = pCoordinate->row, col = pCoordinate->col;
+		int row = pCoordinate->row(), col = pCoordinate->col();
 		board[row][col] = chessType; //在该坐标落子
 		int currentScore = scalculate.calculateBoardScore(board, chessType); //计算分数
 		board[row][col] = EMPTY; //还原为EMPTY
@@ -157,7 +157,7 @@ BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int leve
 		goto END;
 	sort(positions.begin(), positions.end(), compare); //按计算一层的分数排序，排序后更接近按最终分数的排序，可增加剪枝数量
 	for (auto it = positions.begin(); it != positions.end(); it++) {
-		int row = it->c.row, col = it->c.col;
+		int row = it->c.row(), col = it->c.col();
 		board[row][col] = chessType; //在该坐标落子
 		int currentScore;
 		if (scalculate.isGameOver(board, row, col, chessType)) { //若落子后游戏结束

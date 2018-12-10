@@ -1,6 +1,7 @@
 #pragma once
 typedef char **Board;
 typedef char ChessType;
+typedef unsigned char BYTE;
 #define BLACK 'B'
 #define WHITE 'W'
 #define EMPTY '-'
@@ -10,8 +11,16 @@ typedef char ChessType;
 #define NCOLS 15
 
 typedef struct Coordinate {
-	Coordinate(int row, int col) : row(row), col(col) {}
+	Coordinate(int row, int col) {
+		c = (BYTE)row * NROWS + (BYTE)col;
+	}
 	Coordinate() {}
-	int row;
-	int col;
+	int row() {
+		return c / NROWS;
+	}
+	int col() {
+		return c % NROWS;
+	}
+private:
+	BYTE c;
 } *PCoordinate;
