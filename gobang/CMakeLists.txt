@@ -4,6 +4,7 @@ add_library(Gobang SHARED
 	Gobang.cpp
 	Gobang_API.cpp
 	SCalculate.cpp
+	Step.cpp
 	ZMap.cpp
 )
 add_definitions(-D GOBANG_EXPORTS)
