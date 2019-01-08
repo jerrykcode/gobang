@@ -30,6 +30,7 @@ void Gobang::human(int row, int col) {
 	else
 		addBlack(row, col);
 	nChess++;
+	step.addStep(row, col);
 	zmap.deleteMap(nChess - 1); //当前已有nChess颗棋子，(nChess - 1)颗棋子情况的缓存可以删除
 	isComputerTurn = true;
 }
@@ -50,6 +51,7 @@ void Gobang::computer() {
 		addBlack(computerRow, computerCol);
 	else addWhite(computerRow, computerCol);
 	nChess++;
+	step.addStep(computerRow, computerCol);
 	zmap.deleteMap(nChess - 1); //当前已有nChess颗棋子，(nChess - 1)颗棋子情况的缓存可以删除
 }
 
@@ -233,4 +235,26 @@ bool Gobang::isGameOver(int row, int col) {
 
 int Gobang::getSearchLevel() {
 	return 3;
+}
+
+bool Gobang::undoStep() {
+	if (isComputerTurn == true || step.numSteps() < 2) return false;
+	for (int i = 0; i < 2; i++) {
+		Coordinate coordinate = step.undoStep();
+		board[coordinate.row()][coordinate.col()] = EMPTY;
+		lastSteps[i * 2] = coordinate.row();
+		lastSteps[i * 2 + 1] = coordinate.col();
+	}
+	return true;
+}
+
+bool Gobang::redoStep() {
+	if (isComputerTurn == true || step.numRemovedSteps() < 2) return false;
+	for (int i = 0; i < 2; i++) {
+		Coordinate coordinate = step.redoStep();
+		board[coordinate.row()][coordinate.col()] = (i == 0 ? REVERSE_CHESS_TYPE(computerChessType) : computerChessType);
+		lastSteps[i * 2] = coordinate.row();
+		lastSteps[i * 2 + 1] = coordinate.col();
+	}
+	return true;
 }

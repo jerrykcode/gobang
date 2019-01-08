@@ -10,38 +10,50 @@
 extern "C" {
 #endif
 
-	Gobang gobang;
+	PGobang pGobang;
 
 	GOBANG_API void init(char chessType) {
-		gobang = *(new Gobang(chessType));
+		pGobang = new Gobang(chessType);
 	}
 
 	GOBANG_API bool isValid(int row, int col) {
-		return gobang.isValid(row, col);
+		return pGobang->isValid(row, col);
 	}
 
 	GOBANG_API void human(int row, int col) {
-		gobang.human(row, col);
+		pGobang->human(row, col);
 	}
 
 	GOBANG_API void computer() {
-		gobang.computer();
+		pGobang->computer();
 	}
 
 	GOBANG_API int getComputerRow() {
-		return gobang.getComputerRow();
+		return pGobang->getComputerRow();
 	}
 
 	GOBANG_API int getComputerCol() {
-		return gobang.getComputerCol();
+		return pGobang->getComputerCol();
 	}
 
 	GOBANG_API void updateTurnAfterComputer() {
-		return gobang.updateTurnAfterComputer();
+		return pGobang->updateTurnAfterComputer();
 	}
 
 	GOBANG_API bool isGameOver(int row, int col) {
-		return gobang.isGameOver(row, col);
+		return pGobang->isGameOver(row, col);
+	}
+
+	GOBANG_API bool undoStep() {
+		return pGobang->undoStep();
+	}
+
+	GOBANG_API bool redoStep() {
+		return pGobang->redoStep();
+	}
+
+	GOBANG_API void getLastSteps(int *steps) {
+		pGobang->getLastSteps(steps);
 	}
 
 #ifdef __cplusplus 

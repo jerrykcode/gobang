@@ -50,6 +50,17 @@ namespace gobang_gui
         [DllImport(@"GOBANG.dll")]
         public static extern bool isGameOver(int row, int col);
 
+        [DllImport(@"GOBANG.dll")]
+        public static extern bool undoStep();
+
+
+        [DllImport(@"GOBANG.dll")]
+        public static extern bool redoStep();
+
+
+        [DllImport(@"GOBANG.dll")]
+        public static extern void getLastSteps(int[] steps);
+
         private char humanChessType;
         private bool gameOver;
 
@@ -60,6 +71,10 @@ namespace gobang_gui
             InitializeComponent();
 
             //初始化按钮
+            RowDefinition topRowDefinition = new RowDefinition();
+            topRowDefinition.Height = new GridLength(3, GridUnitType.Star);
+            board.RowDefinitions.Add(topRowDefinition);
+
             for (int i = 0; i < 15; i++)
             {
                 RowDefinition rowDefinition = new RowDefinition();
@@ -69,8 +84,27 @@ namespace gobang_gui
                 ColumnDefinition columnDefinition = new ColumnDefinition();
                 columnDefinition.Width = new GridLength(1, GridUnitType.Star);
                 board.ColumnDefinitions.Add(columnDefinition);
-            }        
-            for (int i = 0; i < board.RowDefinitions.Count; i++)
+            }
+
+            Button undoStepButton = new Button();
+            undoStepButton.Content = " <- Undo";
+            undoStepButton.FontSize = 20;            
+            undoStepButton.Click += new RoutedEventHandler(clickUndoStep);
+            Grid.SetRow(undoStepButton, 0);
+            Grid.SetColumn(undoStepButton, 0);
+            Grid.SetColumnSpan(undoStepButton, 5);
+            board.Children.Add(undoStepButton);
+
+            Button redoStepButton = new Button();
+            redoStepButton.Content = "Redo -> ";
+            redoStepButton.FontSize = 20;
+            redoStepButton.Click += new RoutedEventHandler(clickRedoStep);
+            Grid.SetRow(redoStepButton, 0);
+            Grid.SetColumn(redoStepButton, 10);
+            Grid.SetColumnSpan(redoStepButton, 5);
+            board.Children.Add(redoStepButton);
+
+            for (int i = 1; i < board.RowDefinitions.Count; i++)
                 for (int j = 0; j < board.ColumnDefinitions.Count; j++)
                 {
                     Button button = new Button();
@@ -87,6 +121,39 @@ namespace gobang_gui
             humanChessType = 'B'; //用户执黑先行
             init(humanChessType); //初始化
             gameOver = false;
+        }
+
+        private void clickUndoStep(object sender, RoutedEventArgs e)
+        {           
+            if (undoStep())
+            {              
+                int[] lastStepsArray = new int[4];
+                getLastSteps(lastStepsArray);
+                for (int i = 0; i < 2; i++)
+                {
+                    int row = lastStepsArray[i * 2];
+                    int col = lastStepsArray[i * 2 + 1];
+                    ((Button)board.FindName(toName(row, col))).Content = " ";
+                }
+            }
+        }
+
+        private void clickRedoStep(object sender, RoutedEventArgs e)
+        {
+            if (redoStep())
+            {
+                int[] lastStepsArray = new int[4];
+                getLastSteps(lastStepsArray);
+                for (int i = 0; i < 2; i++)
+                {
+                    int row = lastStepsArray[i * 2];
+                    int col = lastStepsArray[i * 2 + 1];
+                    if (i == 0)             
+                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == 'B' ? "●" : "○";
+                    else
+                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == 'B' ? "○" : "●";
+                }
+            }
         }
 
         private void click(object sender, RoutedEventArgs e)

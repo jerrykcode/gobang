@@ -17,18 +17,15 @@ public:
 	Coordinate undoStep();
 	Coordinate redoStep();
 
-	int getLastRow() {
-		return lastRow;
+	int numSteps() {
+		return steps.size();
 	}
 
-	int getLastCol() {
-		return lastCol;
+	int numRemovedSteps() {
+		return removedSteps.size();
 	}
 
 private:
 	stack<Coordinate> steps;
 	stack<Coordinate> removedSteps;
-
-	int lastRow;
-	int lastCol;
 };

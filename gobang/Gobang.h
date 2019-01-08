@@ -2,6 +2,7 @@
 #include "Board.h"
 #include "ZMap.h"
 #include "SCalculate.h"
+#include "Step.h"
 #include <vector>
 #include <queue>
 using namespace std;
@@ -18,7 +19,7 @@ public:
 		for (int i = 0; i < NROWS; i++) {
 			board[i] = new char[NCOLS];
 			fill(board[i], board[i] + NCOLS, EMPTY);
-		}		
+		}				
 	}
 
 	Gobang() {}
@@ -50,6 +51,18 @@ public:
 	/* 判断游戏是否因为在(row, col)坐标落子而结束 */
 	bool isGameOver(int row, int col);
 
+	/* 撤销。若成功则返回true, 否则返回false */
+	bool undoStep();
+
+	/* 重做。若成功则返回true, 否则返回false */
+	bool redoStep();
+
+	void getLastSteps(int *steps) {
+		for (int i = 0; i < 4; i++) {
+			steps[i] = lastSteps[i];
+		}
+	}
+
 private:
 
 	/* 在(row, col)坐标下黑棋 */
@@ -75,4 +88,8 @@ private:
 	Board board;
 	ZMap zmap;
 	SCalculate scalculate;
+	Step step;
+	int lastSteps[4];
 };
+
+typedef Gobang *PGobang;
