@@ -27,6 +27,9 @@ namespace gobang_gui
         [DllImport(@"GOBANG.dll")]
         public static extern void init(char chessType);
 
+	[DllImport(@"GOBANG.dll")]
+	public static extern void endGame();
+
         [DllImport(@"GOBANG.dll")]
         public static extern bool isValid(int row, int col);
 
@@ -61,6 +64,9 @@ namespace gobang_gui
         [DllImport(@"GOBANG.dll")]
         public static extern void getLastSteps(int[] steps);
 
+        private static char BLACK = 'B';
+        private static char WHITE = 'W';
+
         private char humanChessType;
         private bool gameOver;
 
@@ -71,9 +77,12 @@ namespace gobang_gui
             InitializeComponent();
 
             //初始化按钮
-            RowDefinition topRowDefinition = new RowDefinition();
-            topRowDefinition.Height = new GridLength(3, GridUnitType.Star);
-            board.RowDefinitions.Add(topRowDefinition);
+
+	        for (int i = 0; i < 2; i++) {
+            	    RowDefinition topRowDefinition = new RowDefinition();
+            	    topRowDefinition.Height = new GridLength(3, GridUnitType.Star);
+            	    board.RowDefinitions.Add(topRowDefinition);
+	        }
 
             for (int i = 0; i < 15; i++)
             {
@@ -99,12 +108,30 @@ namespace gobang_gui
             redoStepButton.Content = "Redo -> ";
             redoStepButton.FontSize = 20;
             redoStepButton.Click += new RoutedEventHandler(clickRedoStep);
-            Grid.SetRow(redoStepButton, 0);
-            Grid.SetColumn(redoStepButton, 10);
+            Grid.SetRow(redoStepButton, 1);
+            Grid.SetColumn(redoStepButton, 0);
             Grid.SetColumnSpan(redoStepButton, 5);
             board.Children.Add(redoStepButton);
 
-            for (int i = 1; i < board.RowDefinitions.Count; i++)
+            Button restartWithBlackButton = new Button();
+            restartWithBlackButton.Content = "Restart(Black)";
+            restartWithBlackButton.FontSize = 20;
+            restartWithBlackButton.Click += new RoutedEventHandler(clickRestartWithBlackButton);
+            Grid.SetRow(restartWithBlackButton, 0);
+            Grid.SetColumn(restartWithBlackButton, 10);
+            Grid.SetColumnSpan(restartWithBlackButton, 5);
+            board.Children.Add(restartWithBlackButton);
+
+            Button restartWithWhiteButton = new Button();
+            restartWithWhiteButton.Content = "Restart(White)";
+            restartWithWhiteButton.FontSize = 20;
+            restartWithWhiteButton.Click += new RoutedEventHandler(clickRestartWithWhiteButton);
+            Grid.SetRow(restartWithWhiteButton, 1);
+            Grid.SetColumn(restartWithWhiteButton, 10);
+            Grid.SetColumnSpan(restartWithWhiteButton, 5);
+            board.Children.Add(restartWithWhiteButton);
+
+            for (int i = 0; i < board.RowDefinitions.Count - 2; i++) //0 ~ 15
                 for (int j = 0; j < board.ColumnDefinitions.Count; j++)
                 {
                     Button button = new Button();
@@ -113,15 +140,57 @@ namespace gobang_gui
                     button.Name = toName(i, j);
                     RegisterName(toName(i, j), button);
                     button.Click += new RoutedEventHandler(click);
-                    Grid.SetRow(button, i);
+                    Grid.SetRow(button, i + 2);
                     Grid.SetColumn(button, j);
                     board.Children.Add(button);
                 }
 
-            humanChessType = 'B'; //用户执黑先行
+            humanChessType = BLACK; //用户执黑先行
             init(humanChessType); //初始化
             gameOver = false;
         }
+
+        private void clickRestartWithBlackButton(object sender, RoutedEventArgs e)
+        {
+            endGame();
+            humanChessType = BLACK;
+            init(humanChessType);
+            gameOver = false;
+            clearBoard();
+        }
+
+        private void clickRestartWithWhiteButton(object sender, RoutedEventArgs e)
+        {
+            endGame();
+            humanChessType = WHITE;
+            init(humanChessType);
+            gameOver = false;
+            clearBoard();
+            computerFirstStep();
+        }
+
+        private void clearBoard()
+        {
+            for (int row = 0; row < 15; row++)
+                for (int col = 0; col < 15; col++)
+                {
+                    ((Button)board.FindName(toName(row, col))).Content = " ";
+                }
+        }
+
+	    private void computerFirstStep() {
+		    if (humanChessType == WHITE) {
+			    computer(); //电脑落子         
+       		    int computerRow = getComputerRow();
+                int computerCol = getComputerCol();
+                //找到电脑落子所在的按钮
+                if (board.FindName(toName(computerRow, computerCol)) != null)
+                {
+                    ((Button)board.FindName(toName(computerRow, computerCol))).Content = "●";
+                }
+             	updateTurnAfterComputer();  
+		    }	
+	    }
 
         private void clickUndoStep(object sender, RoutedEventArgs e)
         {           
@@ -135,6 +204,7 @@ namespace gobang_gui
                     int col = lastStepsArray[i * 2 + 1];
                     ((Button)board.FindName(toName(row, col))).Content = " ";
                 }
+                gameOver = false;
             }
         }
 
@@ -149,9 +219,13 @@ namespace gobang_gui
                     int row = lastStepsArray[i * 2];
                     int col = lastStepsArray[i * 2 + 1];
                     if (i == 0)             
-                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == 'B' ? "●" : "○";
+                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == BLACK ? "●" : "○";
                     else
-                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == 'B' ? "○" : "●";
+                        ((Button)board.FindName(toName(row, col))).Content = humanChessType == BLACK ? "○" : "●";
+                    if (isGameOver(row, col))
+                    {
+                        gameOver = true;
+                    }
                 }
             }
         }
@@ -167,7 +241,7 @@ namespace gobang_gui
             {              
                 human(row, col);
 
-                ((Button)sender).Content = humanChessType == 'B' ? "●" : "○";
+                ((Button)sender).Content = humanChessType == BLACK ? "●" : "○";
                 App.DoEvents(); //更新UI
                 if (isGameOver(row, col))
                 {
@@ -181,7 +255,7 @@ namespace gobang_gui
                 //找到电脑落子所在的按钮
                 if (board.FindName(toName(computerRow, computerCol)) != null)
                 {
-                    ((Button)board.FindName(toName(computerRow, computerCol))).Content = humanChessType == 'B' ? "○" : "●";
+                    ((Button)board.FindName(toName(computerRow, computerCol))).Content = humanChessType == BLACK ? "○" : "●";
                 }
                 if (isGameOver(computerRow, computerCol))
                 {

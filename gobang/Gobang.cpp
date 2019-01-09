@@ -122,6 +122,9 @@ PCoordinate Gobang::bfsGetAround(queue<PCoordinate>& q, vector<PCoordinate>& pCo
 }
 
 BestResult Gobang::getBestResult(int preBestScore, ChessType chessType, int level) {
+	if (nChess == 0) {
+		return BestResult(Coordinate(NROWS / 2, NCOLS / 2), 1, 1); //棋盘上没有棋子，第一手，走中间。BestResult的level和score任意数均可
+	}
 	if (zmap.hasKey(board)) { //缓存中有board
 		BestResult bestResult = zmap.getValue(board);
 		if (bestResult.level >= level) return bestResult; //缓存中的结果的搜索层数足够
@@ -229,6 +232,7 @@ void Gobang::updateTurnAfterComputer() {
 }
 
 bool Gobang::isGameOver(int row, int col) {
+	if (nChess == NROWS * NCOLS) return true;
 	if (board[row][col] == EMPTY) return false;
 	return scalculate.isGameOver(board, row, col, board[row][col]);
 }
@@ -242,6 +246,7 @@ bool Gobang::undoStep() {
 	for (int i = 0; i < 2; i++) {
 		Coordinate coordinate = step.undoStep();
 		board[coordinate.row()][coordinate.col()] = EMPTY;
+		nChess--;
 		lastSteps[i * 2] = coordinate.row();
 		lastSteps[i * 2 + 1] = coordinate.col();
 	}
@@ -253,6 +258,7 @@ bool Gobang::redoStep() {
 	for (int i = 0; i < 2; i++) {
 		Coordinate coordinate = step.redoStep();
 		board[coordinate.row()][coordinate.col()] = (i == 0 ? REVERSE_CHESS_TYPE(computerChessType) : computerChessType);
+		nChess++;
 		lastSteps[i * 2] = coordinate.row();
 		lastSteps[i * 2 + 1] = coordinate.col();
 	}

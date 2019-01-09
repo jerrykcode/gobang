@@ -16,6 +16,11 @@ extern "C" {
 		pGobang = new Gobang(chessType);
 	}
 
+	GOBANG_API void endGame() {
+		delete pGobang;
+		pGobang = NULL;
+	}
+
 	GOBANG_API bool isValid(int row, int col) {
 		return pGobang->isValid(row, col);
 	}
